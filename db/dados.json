@@ -1,0 +1,233 @@
+{
+  "bt_users": [
+    {
+      "id": "mo7xo5xx5u2y1",
+      "login": "admin",
+      "nome": "Administrador",
+      "perfil": "superadmin",
+      "perms": [
+        "ver_dashboard",
+        "ver_funcionarios",
+        "editar_funcionarios",
+        "ver_campanhas",
+        "editar_campanhas",
+        "lancar_resultados",
+        "ver_extrato",
+        "marcar_pago",
+        "ver_relatorio",
+        "gerenciar_usuarios"
+      ],
+      "senha": "admin123"
+    }
+  ],
+  "bt_funcs": [
+    {
+      "id": "mo7xo5xxhq4q7",
+      "nome": "Ana Silva",
+      "cargo": "Atendente",
+      "depto": "Atendimento",
+      "admissao": "2023-01-10",
+      "status": "ativo",
+      "obs": ""
+    },
+    {
+      "id": "mo7xo5xx0mhuy",
+      "nome": "Bruno Costa",
+      "cargo": "Vendedor",
+      "depto": "Vendas",
+      "admissao": "2022-06-15",
+      "status": "ativo",
+      "obs": ""
+    },
+    {
+      "id": "mo7xo5xxvp2hn",
+      "nome": "Carla Souza",
+      "cargo": "Vendedora",
+      "depto": "Vendas",
+      "admissao": "2023-03-20",
+      "status": "ativo",
+      "obs": ""
+    },
+    {
+      "id": "mo7xo5xxdzgv2",
+      "nome": "Diego Ferreira",
+      "cargo": "Atendente",
+      "depto": "Atendimento",
+      "admissao": "2021-11-01",
+      "status": "ativo",
+      "obs": ""
+    },
+    {
+      "id": "mo7xo5xxu0vgp",
+      "nome": "Eliana Martins",
+      "cargo": "Supervisora",
+      "depto": "Geral",
+      "admissao": "2020-05-12",
+      "status": "ativo",
+      "obs": ""
+    }
+  ],
+  "bt_camps": [
+    {
+      "id": "mo7xo5xxdpcag",
+      "nome": "Campanha Acompanhamentos Extras — Jan/2025",
+      "desc": "Bonificação por cada acompanhamento extra realizado fora do cardápio padrão.",
+      "inicio": "2025-01-01",
+      "fim": "2025-01-31",
+      "tipo": "individual",
+      "funcs": [],
+      "status": "encerrada",
+      "metas": [
+        {
+          "id": "mo7xo5xx0k6rt",
+          "nome": "Acompanhamentos Extras",
+          "tipo": "quantidade",
+          "valor_meta": 0,
+          "bonus": 15,
+          "desc": "R$15,00 por acompanhamento extra servido"
+        }
+      ]
+    },
+    {
+      "id": "mo7xo5xxiyhk7",
+      "nome": "Meta de Vendas — Fev/2025",
+      "desc": "Campanha mensal para equipe de vendas: bater meta de venda, nota de avaliação e pontualidade.",
+      "inicio": "2025-02-01",
+      "fim": "2025-02-28",
+      "tipo": "grupo",
+      "funcs": [
+        "mo7xo5xx0mhuy",
+        "mo7xo5xxvp2hn"
+      ],
+      "status": "ativa",
+      "metas": [
+        {
+          "id": "mo7xo5xxpq5vg",
+          "nome": "Meta de Venda",
+          "tipo": "valor_minimo",
+          "valor_meta": 10000,
+          "bonus": 500,
+          "desc": "R$500 ao atingir R$10.000 em vendas"
+        },
+        {
+          "id": "mo7xo5xxk12sf",
+          "nome": "Nota de Avaliação ≥ 8",
+          "tipo": "nota",
+          "valor_meta": 8,
+          "bonus": 200,
+          "desc": "R$200 por nota igual ou superior a 8"
+        },
+        {
+          "id": "mo7xo5xx67c0x",
+          "nome": "Zero Falta no Mês",
+          "tipo": "binario",
+          "valor_meta": 0,
+          "bonus": 150,
+          "desc": "R$150 por assiduidade total no mês"
+        }
+      ]
+    }
+  ],
+  "bt_lancs": [
+    {
+      "id": "mo7xo5xy1rwrt",
+      "campId": "mo7xo5xxdpcag",
+      "funcId": "mo7xo5xxhq4q7",
+      "metaId": "mo7xo5xx0k6rt",
+      "valor": 7,
+      "bonus": 105,
+      "pago": true,
+      "dataPagamento": "2025-02-05"
+    },
+    {
+      "id": "mo7xo5xyd0tcq",
+      "campId": "mo7xo5xxdpcag",
+      "funcId": "mo7xo5xx0mhuy",
+      "metaId": "mo7xo5xx0k6rt",
+      "valor": 12,
+      "bonus": 180,
+      "pago": true,
+      "dataPagamento": "2025-02-05"
+    },
+    {
+      "id": "mo7xo5xy0tcju",
+      "campId": "mo7xo5xxdpcag",
+      "funcId": "mo7xo5xxvp2hn",
+      "metaId": "mo7xo5xx0k6rt",
+      "valor": 5,
+      "bonus": 75,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xyrdw02",
+      "campId": "mo7xo5xxdpcag",
+      "funcId": "mo7xo5xxdzgv2",
+      "metaId": "mo7xo5xx0k6rt",
+      "valor": 9,
+      "bonus": 135,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xypjbmi",
+      "campId": "mo7xo5xxiyhk7",
+      "funcId": "mo7xo5xx0mhuy",
+      "metaId": "mo7xo5xxpq5vg",
+      "valor": 12500,
+      "bonus": 500,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xyxlfgg",
+      "campId": "mo7xo5xxiyhk7",
+      "funcId": "mo7xo5xx0mhuy",
+      "metaId": "mo7xo5xxk12sf",
+      "valor": 9,
+      "bonus": 200,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xygun8l",
+      "campId": "mo7xo5xxiyhk7",
+      "funcId": "mo7xo5xx0mhuy",
+      "metaId": "mo7xo5xx67c0x",
+      "valor": 1,
+      "bonus": 150,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xyjfvc0",
+      "campId": "mo7xo5xxiyhk7",
+      "funcId": "mo7xo5xxvp2hn",
+      "metaId": "mo7xo5xxpq5vg",
+      "valor": 8000,
+      "bonus": 0,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xy7ojhv",
+      "campId": "mo7xo5xxiyhk7",
+      "funcId": "mo7xo5xxvp2hn",
+      "metaId": "mo7xo5xxk12sf",
+      "valor": 7,
+      "bonus": 0,
+      "pago": false,
+      "dataPagamento": null
+    },
+    {
+      "id": "mo7xo5xy7a4m9",
+      "campId": "mo7xo5xxiyhk7",
+      "funcId": "mo7xo5xxvp2hn",
+      "metaId": "mo7xo5xx67c0x",
+      "valor": 1,
+      "bonus": 150,
+      "pago": false,
+      "dataPagamento": null
+    }
+  ]
+}
