@@ -170,17 +170,17 @@
       "dataPagamento": null
     },
     {
-      "id": "mo7ycw5xkoi3t",
+      "id": "mo7ydubwdk2sy",
       "campId": "mo7xo5xxiyhk7",
       "funcId": "mo7xo5xx0mhuy",
       "metaId": "mo7xo5xxpq5vg",
-      "valor": 12500,
-      "bonus": 500,
+      "valor": "1000",
+      "bonus": 0,
       "pago": false,
       "dataPagamento": null
     },
     {
-      "id": "mo7ycw5xwkiae",
+      "id": "mo7ydubwn7rz2",
       "campId": "mo7xo5xxiyhk7",
       "funcId": "mo7xo5xx0mhuy",
       "metaId": "mo7xo5xxk12sf",
@@ -190,17 +190,17 @@
       "dataPagamento": null
     },
     {
-      "id": "mo7ycw5xt321t",
+      "id": "mo7ydubw5reej",
       "campId": "mo7xo5xxiyhk7",
       "funcId": "mo7xo5xx0mhuy",
       "metaId": "mo7xo5xx67c0x",
-      "valor": 1,
-      "bonus": 150,
+      "valor": "0",
+      "bonus": 0,
       "pago": false,
       "dataPagamento": null
     },
     {
-      "id": "mo7ycw5xzmc66",
+      "id": "mo7ydubwwb73j",
       "campId": "mo7xo5xxiyhk7",
       "funcId": "mo7xo5xxvp2hn",
       "metaId": "mo7xo5xxpq5vg",
@@ -210,7 +210,7 @@
       "dataPagamento": null
     },
     {
-      "id": "mo7ycw5xt973y",
+      "id": "mo7ydubwk22bq",
       "campId": "mo7xo5xxiyhk7",
       "funcId": "mo7xo5xxvp2hn",
       "metaId": "mo7xo5xxk12sf",
@@ -220,11 +220,11 @@
       "dataPagamento": null
     },
     {
-      "id": "mo7ycw5xpuuef",
+      "id": "mo7ydubwlp1zx",
       "campId": "mo7xo5xxiyhk7",
       "funcId": "mo7xo5xxvp2hn",
       "metaId": "mo7xo5xx67c0x",
-      "valor": 1,
+      "valor": "1",
       "bonus": 150,
       "pago": false,
       "dataPagamento": null
