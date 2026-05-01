@@ -255,6 +255,10 @@ tr.inativo td { opacity: .55; }
   <div class="login-box">
     <div class="login-logo">Bonus <span>Track</span></div>
     <div class="login-sub">Sistema de Gestão de Bonificações por Campanha</div>
+    <div style="background:rgba(160,120,40,0.08);border:1px solid rgba(160,120,40,0.25);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--text-dim);text-align:left;">
+      🔑 <strong style="color:var(--gold);">super</strong> / super123 — acesso a todas as empresas<br>
+      🔑 <strong>admin</strong> / admin123 — usuário de empresa
+    </div>
     <div id="login-gh-status" style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:18px;gap:10px;">
       <span id="login-gh-txt" style="font-size:12px;color:var(--text-dim);">⚠️ GitHub não configurado</span>
       <button onclick="abrirGHConfig()" style="background:transparent;border:1px solid var(--blue);color:var(--blue-light);padding:4px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;white-space:nowrap;">⚙️ Configurar</button>
@@ -267,8 +271,13 @@ tr.inativo td { opacity: .55; }
       <label>Senha</label>
       <input type="password" class="login-input" id="login-pass" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')fazerLogin()">
     </div>
+    <!-- Campo de empresa (visível só quando usuário tem múltiplas empresas) -->
+    <div class="login-field" id="login-empresa-row" style="display:none;">
+      <label>Empresa</label>
+      <select class="login-input" id="login-empresa" style="letter-spacing:0;font-size:14px;"></select>
+    </div>
     <div class="login-error" id="login-error"></div>
-    <button class="login-btn" onclick="fazerLogin()">🔑 Entrar</button>
+    <button class="login-btn" id="login-btn" onclick="fazerLogin()">🔑 Entrar</button>
   </div>
 </div>
 
@@ -276,10 +285,15 @@ tr.inativo td { opacity: .55; }
 <header>
   <div>
     <div class="logo">Bonus <span>Track</span></div>
-    <div id="header-sub" style="font-size:11px;color:var(--text-dim);margin-top:1px;"></div>
+    <div id="header-empresa-nome" style="font-size:11px;color:var(--text-dim);margin-top:1px;font-weight:500;"></div>
   </div>
   <nav id="main-nav"></nav>
   <div class="header-right">
+    <!-- Switcher de empresa para superadmin -->
+    <div id="header-empresa-switcher" style="display:none;align-items:center;gap:6px;">
+      <span style="font-size:11px;color:var(--text-dim);">🌐 Empresa:</span>
+      <select id="super-empresa-sel" onchange="superTrocarEmpresa(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;max-width:180px;"></select>
+    </div>
     <span id="gh-status" style="font-size:12px;font-weight:500;white-space:nowrap;"></span>
     <button class="btn btn-ghost-blue btn-sm" onclick="abrirGHConfig()">⚙️ GitHub</button>
     <span>👤 <strong id="user-display">—</strong></span>
@@ -321,7 +335,7 @@ tr.inativo td { opacity: .55; }
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Funcionário</th><th>Cargo</th><th>Campanhas</th><th>Metas Atingidas</th><th>Total Bonificação</th><th>Status</th>
+            <th>Funcionário</th><th>Setor</th><th>Campanhas</th><th>Metas Atingidas</th><th>Total Bonificação</th><th>Status</th>
           </tr></thead>
           <tbody id="dash-tbody"></tbody>
         </table>
@@ -332,19 +346,55 @@ tr.inativo td { opacity: .55; }
   <!-- FUNCIONÁRIOS -->
   <div class="page" id="page-funcionarios">
     <div class="page-title">👥 Funcionários</div>
-    <div class="page-sub">Cadastro de funcionários elegíveis a bonificações</div>
+    <div class="page-sub">Cadastro e gestão de funcionários</div>
     <div class="card">
       <div class="card-header">
-        <div class="card-title" style="margin-bottom:0">Cadastro</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <input type="text" id="func-search" placeholder="🔍 Buscar por nome…" style="max-width:220px;" oninput="rFuncionarios()">
+          <select id="func-fil-setor" onchange="rFuncionarios()" style="max-width:180px;">
+            <option value="">Todos os setores</option>
+            <option value="Atendimento">Atendimento</option>
+            <option value="Cozinha">Cozinha</option>
+            <option value="Gestão">Gestão</option>
+          </select>
+          <select id="func-fil-status" onchange="rFuncionarios()" style="max-width:160px;">
+            <option value="">Todos os status</option>
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+          </select>
+        </div>
         <button class="btn btn-gold" onclick="openFuncModal()" id="btn-novo-func">+ Novo Funcionário</button>
       </div>
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Nome</th><th>Cargo / Função</th><th>Departamento</th><th>Status</th><th>Admissão</th><th>Ações</th>
+            <th>Nome</th><th>Setor</th><th>CPF</th><th>RG</th><th>Nascimento</th><th>Admissão</th><th>Demissão</th><th>Status</th><th>Ações</th>
           </tr></thead>
           <tbody id="func-tbody"></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETORES -->
+  <div class="page" id="page-setores">
+    <div class="page-title">🏷️ Setores</div>
+    <div class="page-sub">Setores disponíveis no sistema</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:8px;">
+      <div class="card" style="margin-bottom:0;display:flex;align-items:center;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(58,111,152,.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🛎️</div>
+        <div><div style="font-weight:700;font-size:16px;">Atendimento</div><div style="font-size:12px;color:var(--text-dim);margin-top:3px;">Equipe de atendimento ao cliente</div>
+        <span class="badge b-green" style="margin-top:6px;display:inline-block;">Ativo</span></div>
+      </div>
+      <div class="card" style="margin-bottom:0;display:flex;align-items:center;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(196,106,32,.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍳</div>
+        <div><div style="font-weight:700;font-size:16px;">Cozinha</div><div style="font-size:12px;color:var(--text-dim);margin-top:3px;">Equipe de cozinha e preparo</div>
+        <span class="badge b-green" style="margin-top:6px;display:inline-block;">Ativo</span></div>
+      </div>
+      <div class="card" style="margin-bottom:0;display:flex;align-items:center;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(160,120,40,.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📊</div>
+        <div><div style="font-weight:700;font-size:16px;">Gestão</div><div style="font-size:12px;color:var(--text-dim);margin-top:3px;">Equipe de gestão e administração</div>
+        <span class="badge b-green" style="margin-top:6px;display:inline-block;">Ativo</span></div>
       </div>
     </div>
   </div>
@@ -472,6 +522,26 @@ tr.inativo td { opacity: .55; }
     </div>
   </div>
 
+  <!-- EMPRESAS (apenas superadmin) -->
+  <div class="page" id="page-empresas">
+    <div class="page-title">🏢 Empresas</div>
+    <div class="page-sub">Gerencie as empresas do sistema — apenas Super Administrador</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Nova Empresa</div>
+        <div class="field"><label>Nome da Empresa *</label><input type="text" id="emp-nome" placeholder="Ex.: Restaurante Central"></div>
+        <div class="field"><label>Endereço (opcional)</label><input type="text" id="emp-end" placeholder="Ex.: Av. Paulista, 1000 — SP"></div>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="addEmpresa()">+ Adicionar Empresa</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Empresas Cadastradas</div>
+        <div id="lista-empresas"><div class="empty"><span class="ico">🏢</span>Nenhuma empresa</div></div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- ═══════ MODAL FUNCIONÁRIO ═══════ -->
@@ -482,17 +552,29 @@ tr.inativo td { opacity: .55; }
       <button class="modal-x" onclick="closeMod('modal-func')">×</button>
     </div>
     <div class="grid2">
-      <div class="field full"><label>Nome Completo</label><input type="text" id="f-nome" placeholder="NOME DO FUNCIONÁRIO"></div>
-      <div class="field"><label>Cargo / Função</label><input type="text" id="f-cargo" placeholder="Ex: Atendente, Vendedor"></div>
-      <div class="field"><label>Departamento</label><input type="text" id="f-depto" placeholder="Ex: Vendas, Atendimento"></div>
-      <div class="field"><label>Admissão</label><input type="date" id="f-admissao"></div>
-      <div class="field"><label>Status</label>
+      <div class="field full"><label>Nome Completo *</label><input type="text" id="f-nome" placeholder="Nome completo do funcionário"></div>
+      <div class="field"><label>Setor *</label>
+        <select id="f-depto">
+          <option value="">— Selecione —</option>
+          <option value="Atendimento">Atendimento</option>
+          <option value="Cozinha">Cozinha</option>
+          <option value="Gestão">Gestão</option>
+        </select>
+      </div>
+      <div class="field"><label>Status *</label>
         <select id="f-status">
           <option value="ativo">Ativo</option>
           <option value="inativo">Inativo</option>
         </select>
       </div>
-      <div class="field full"><label>Observações</label><textarea id="f-obs" placeholder="Observações opcionais..."></textarea></div>
+      <div class="field"><label>CPF</label><input type="text" id="f-cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"></div>
+      <div class="field"><label>RG</label><input type="text" id="f-rg" placeholder="00.000.000-0" maxlength="12" oninput="maskRG(this)"></div>
+      <div class="field"><label>Data de Nascimento</label><input type="date" id="f-nasc"></div>
+      <div class="field"><label>Data de Admissão</label><input type="date" id="f-admissao"></div>
+      <div class="field"><label>Data de Demissão</label><input type="date" id="f-demissao"></div>
+    </div>
+    <div style="margin-top:10px;padding:10px 14px;background:rgba(160,120,40,.06);border:1px solid rgba(160,120,40,.18);border-radius:8px;font-size:12px;color:var(--text-dim);">
+      🔒 <strong style="color:var(--gold);">Dados protegidos</strong> — Nome, CPF, RG e datas são criptografados com AES-256-GCM antes de serem salvos.
     </div>
     <div class="modal-ft">
       <button class="btn btn-ghost" onclick="closeMod('modal-func')">Cancelar</button>
@@ -577,14 +659,20 @@ tr.inativo td { opacity: .55; }
       <div class="field"><label>Senha</label><input type="password" id="u-senha" placeholder="••••••••"></div>
       <div class="field full"><label>Nome Completo</label><input type="text" id="u-nome" placeholder="Nome Completo"></div>
       <div class="field full"><label>Perfil</label>
-        <select id="u-perfil">
-          <option value="superadmin">Super Admin (acesso total)</option>
+        <select id="u-perfil" onchange="onPerfilChange()">
+          <option value="superadmin">Super Admin (acesso total a todas as empresas)</option>
           <option value="admin">Administrador</option>
           <option value="gerente">Gerente (visualiza e lança)</option>
           <option value="operador">Operador (somente lança)</option>
           <option value="viewer">Visualizador (somente consulta)</option>
         </select>
       </div>
+    </div>
+    <!-- Empresas vinculadas (oculto para superadmin) -->
+    <div id="usr-empresa-row">
+      <div class="divider"></div>
+      <div class="sec-label">Empresas com Acesso</div>
+      <div class="perm-grid" id="usr-empresa-grid"><span style="font-size:12px;color:var(--text-dim);">Nenhuma empresa cadastrada.</span></div>
     </div>
     <div class="divider"></div>
     <div class="sec-label">Permissões de Acesso</div>
@@ -635,16 +723,71 @@ var _cache      = {};
 var _currentSha = null;
 
 // ── Getters / Setters ────────────────────────────────────────────────
-const gFuncs     = () => Array.isArray(_cache['bt_funcs'])   ? JSON.parse(JSON.stringify(_cache['bt_funcs']))   : [];
-const gCamps     = () => Array.isArray(_cache['bt_camps'])   ? JSON.parse(JSON.stringify(_cache['bt_camps']))   : [];
-const gLancs     = () => Array.isArray(_cache['bt_lancs'])   ? JSON.parse(JSON.stringify(_cache['bt_lancs']))   : [];
-const gUsers     = () => Array.isArray(_cache['bt_users'])   ? JSON.parse(JSON.stringify(_cache['bt_users']))   : [];
-const sFuncs     = (d, cb) => DB.set('bt_funcs', d, cb);
-const sCamps     = (d, cb) => DB.set('bt_camps', d, cb);
-const sLancs     = (d, cb) => DB.set('bt_lancs', d, cb);
-const sUsers     = (d, cb) => DB.set('bt_users', d, cb);
+// Multi-empresa: dados são prefixados por empresa ativa
+function _empKey(k) {
+  if (_empresaAtiva) return 'emp_' + _empresaAtiva.id + '_' + k;
+  return 'bt_' + k;
+}
+const gFuncs  = () => { var k=_empKey('funcs'); return Array.isArray(_decryptedFuncs[k]) ? JSON.parse(JSON.stringify(_decryptedFuncs[k])) : []; };
+const gCamps  = () => { var k=_empKey('camps'); return Array.isArray(_cache[k]) ? JSON.parse(JSON.stringify(_cache[k])) : []; };
+const gLancs  = () => { var k=_empKey('lancs'); return Array.isArray(_cache[k]) ? JSON.parse(JSON.stringify(_cache[k])) : []; };
+const gUsers  = () => Array.isArray(_cache['bt_users']) ? JSON.parse(JSON.stringify(_cache['bt_users'])) : [];
+const gEmpresas = () => Array.isArray(_cache['bt_empresas']) ? JSON.parse(JSON.stringify(_cache['bt_empresas'])) : [];
+// sFuncs: async — criptografa os campos PII antes de persistir
+async function sFuncs(data, cb) {
+  const k = _empKey('funcs');
+  // 1. Guarda versão descriptografada no cache de memória
+  _decryptedFuncs[k] = JSON.parse(JSON.stringify(data));
+  // 2. Criptografa todos os campos sensíveis para armazenamento
+  const encrypted = await Promise.all(data.map(async f => ({
+    id:           f.id,
+    depto:        f.depto,
+    status:       f.status,
+    enc_nome:     await CryptoManager.encrypt(f.nome     || ''),
+    enc_rg:       await CryptoManager.encrypt(f.rg       || ''),
+    enc_cpf:      await CryptoManager.encrypt(f.cpf      || ''),
+    enc_nasc:     await CryptoManager.encrypt(f.nasc     || ''),
+    enc_admissao: await CryptoManager.encrypt(f.admissao || ''),
+    enc_demissao: await CryptoManager.encrypt(f.demissao || ''),
+  })));
+  DB.set(k, encrypted, cb);
+}
+const sCamps  = (d, cb) => DB.set(_empKey('camps'), d, cb);
+const sLancs  = (d, cb) => DB.set(_empKey('lancs'), d, cb);
+const sUsers  = (d, cb) => DB.set('bt_users', d, cb);
+const sEmpresas = (d, cb) => DB.set('bt_empresas', d, cb);
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+// ── Multi-empresa: estado da sessão ──────────────────────────────────
+var _usuarioLogado = null;
+var _empresaAtiva  = null;
+
+function _hashSenha(s) {
+  var h = 0;
+  for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+  return h.toString(16);
+}
+
+function _garantirSuperAdmin() {
+  if (!Array.isArray(_cache['bt_users'])) _cache['bt_users'] = [];
+  var existe = _cache['bt_users'].some(function(u) { return u.login === 'super' && u.perfil === 'superadmin'; });
+  if (!existe) {
+    _cache['bt_users'].push({
+      id: 'super',
+      login: 'super',
+      nome: 'Super Admin',
+      senhaHash: _hashSenha('super123'),
+      perfil: 'superadmin',
+      empresas: [],
+      perms: PERMS ? PERMS.map(function(p) { return p.key; }) : [],
+      senha: null
+    });
+  }
+}
+
+function _getEmpresas() { return gEmpresas(); }
+function _setEmpresas(lista, cb) { sEmpresas(lista, cb); }
 
 // ── GH Config ────────────────────────────────────────────────────────
 var GH = {
@@ -772,12 +915,13 @@ function setStatus(msg, color) {
 // ══════════════════════════════════════════════════════════════════════
 //  AUTENTICAÇÃO / SESSÃO
 // ══════════════════════════════════════════════════════════════════════
-var currentUser = null;
+var currentUser = null; // kept for compatibility
 
 const PERMS = [
   { key: 'ver_dashboard',  label: '📊 Dashboard' },
   { key: 'ver_funcionarios', label: '👥 Ver Funcionários' },
   { key: 'editar_funcionarios', label: '✏️ Editar Funcionários' },
+  { key: 'ver_setores',    label: '🏷️ Ver Setores' },
   { key: 'ver_campanhas',  label: '🎯 Ver Campanhas' },
   { key: 'editar_campanhas', label: '✏️ Editar Campanhas' },
   { key: 'lancar_resultados', label: '📝 Lançar Resultados' },
@@ -790,40 +934,165 @@ const PERMS = [
 const PERFIL_PERMS = {
   superadmin: PERMS.map(p => p.key),
   admin:      PERMS.map(p => p.key),
-  gerente:    ['ver_dashboard','ver_funcionarios','editar_funcionarios','ver_campanhas','editar_campanhas','lancar_resultados','ver_extrato','ver_relatorio'],
-  operador:   ['ver_dashboard','ver_funcionarios','ver_campanhas','lancar_resultados','ver_extrato'],
-  viewer:     ['ver_dashboard','ver_funcionarios','ver_campanhas','ver_extrato','ver_relatorio'],
+  gerente:    ['ver_dashboard','ver_funcionarios','editar_funcionarios','ver_setores','ver_campanhas','editar_campanhas','lancar_resultados','ver_extrato','ver_relatorio'],
+  operador:   ['ver_dashboard','ver_funcionarios','ver_setores','ver_campanhas','lancar_resultados','ver_extrato'],
+  viewer:     ['ver_dashboard','ver_funcionarios','ver_setores','ver_campanhas','ver_extrato','ver_relatorio'],
 };
 
 function hasPerm(key) {
-  if (!currentUser) return false;
-  if (currentUser.perfil === 'superadmin') return true;
-  return (currentUser.perms || []).includes(key);
+  var u = _usuarioLogado || currentUser;
+  if (!u) return false;
+  if (u.perfil === 'superadmin') return true;
+  return (u.perms || []).includes(key);
 }
 
-function fazerLogin() {
-  const login = document.getElementById('login-user').value.trim();
-  const senha = document.getElementById('login-pass').value;
-  const err   = document.getElementById('login-error');
-  err.textContent = '';
-  const users = gUsers();
-  const u = users.find(x => x.login === login && x.senha === senha);
-  if (!u) { err.textContent = 'Usuário ou senha inválidos.'; return; }
-  currentUser = u;
+async function fazerLogin() {
+  var login = document.getElementById('login-user').value.trim();
+  var senha = document.getElementById('login-pass').value;
+  var errEl = document.getElementById('login-error');
+  var btn   = document.getElementById('login-btn');
+  errEl.textContent = '';
+  if (!login || !senha) { errEl.textContent = 'Preencha usuário e senha.'; return; }
+
+  btn.textContent = '⏳ Verificando...';
+  btn.disabled = true;
+
+  // Garante que os dados do GitHub foram carregados
+  if (GH.isConfigured()) {
+    try { await DB.loadGH(); await _decryptAllFuncs(); } catch(e) {}
+  }
+
+  btn.textContent = '🔑 Entrar';
+  btn.disabled = false;
+
+  // Garante que sempre existe o superadmin
+  _garantirSuperAdmin();
+  var usuarios = gUsers();
+
+  // Verifica credenciais: suporta senha em hash (novo) e senha plaintext (legado)
+  var encontrado = null;
+  for (var i = 0; i < usuarios.length; i++) {
+    var u = usuarios[i];
+    var loginOk = u.login.toLowerCase() === login.toLowerCase();
+    var senhaOk = (u.senhaHash && u.senhaHash === _hashSenha(senha)) || (u.senha && u.senha === senha);
+    if (loginOk && senhaOk) { encontrado = u; break; }
+  }
+
+  if (!encontrado) {
+    errEl.textContent = '❌ Usuário ou senha incorretos.';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+    return;
+  }
+
+  // Superadmin: entra diretamente sem escolher empresa
+  if (encontrado.perfil === 'superadmin') {
+    _entrarSistema(encontrado, null);
+    return;
+  }
+
+  // Usuário normal: verifica empresas vinculadas
+  var empIds = encontrado.empresas || [];
+  var todasEmpresas = _getEmpresas();
+  var empresasAcesso = todasEmpresas.filter(function(e) { return empIds.indexOf(e.id) >= 0; });
+
+  if (!empresasAcesso.length) {
+    errEl.textContent = '⚠️ Usuário sem empresa vinculada. Contate o administrador.';
+    return;
+  }
+
+  if (empresasAcesso.length === 1) {
+    _entrarSistema(encontrado, empresasAcesso[0]);
+    return;
+  }
+
+  // Múltiplas empresas: mostra combo de seleção
+  var sel = document.getElementById('login-empresa');
+  sel.innerHTML = '<option value="">— Selecione a empresa —</option>' +
+    empresasAcesso.map(function(e) { return '<option value="' + e.id + '">' + e.nome + '</option>'; }).join('');
+  document.getElementById('login-empresa-row').style.display = '';
+  errEl.textContent = '';
+
+  btn.textContent = '🏢 Confirmar Empresa';
+  btn.onclick = function() {
+    var empId = document.getElementById('login-empresa').value;
+    if (!empId) { document.getElementById('login-error').textContent = '⚠️ Selecione a empresa.'; return; }
+    var emp = empresasAcesso.find(function(e) { return e.id === empId; });
+    _entrarSistema(encontrado, emp);
+    btn.textContent = '🔑 Entrar';
+    btn.onclick = fazerLogin;
+  };
+}
+
+function _entrarSistema(user, empresa) {
+  _usuarioLogado = user;
+  _empresaAtiva  = empresa;
+  currentUser    = user; // compatibilidade com hasPerm()
+
   document.getElementById('login-screen').classList.remove('open');
-  document.getElementById('user-display').textContent = u.nome || u.login;
+  document.getElementById('login-empresa-row').style.display = 'none';
+  document.getElementById('user-display').textContent = user.nome || user.login;
+
+  // Mostra nome da empresa no header
+  var hEmp = document.getElementById('header-empresa-nome');
+  if (hEmp) hEmp.textContent = empresa ? ('🏢 ' + empresa.nome) : '🌐 Todas as empresas';
+
+  // Switcher de empresa para superadmin
+  var switcher = document.getElementById('header-empresa-switcher');
+  if (user.perfil === 'superadmin') {
+    switcher.style.display = 'flex';
+    _popularSuperSel();
+  } else {
+    switcher.style.display = 'none';
+  }
+
   buildNav();
   navigateTo('dashboard');
   rAll();
 }
 
+function superTrocarEmpresa(empId) {
+  if (empId) {
+    var emp = _getEmpresas().find(function(e) { return e.id === empId; });
+    _empresaAtiva = emp || null;
+  } else {
+    _empresaAtiva = null;
+  }
+  var hEmp = document.getElementById('header-empresa-nome');
+  if (hEmp) hEmp.textContent = _empresaAtiva ? ('🏢 ' + _empresaAtiva.nome) : '🌐 Todas as empresas';
+  rAll();
+  var activePage = document.querySelector('.page.active');
+  if (activePage) {
+    var pName = activePage.id.replace('page-', '');
+    navigateTo(pName);
+  }
+}
+
+function _popularSuperSel() {
+  var sel = document.getElementById('super-empresa-sel');
+  if (!sel) return;
+  var empresas = _getEmpresas();
+  sel.innerHTML = '<option value="">🌐 Todas as empresas</option>' +
+    empresas.map(function(e) { return '<option value="' + e.id + '">' + e.nome + '</option>'; }).join('');
+  if (_empresaAtiva) sel.value = _empresaAtiva.id;
+}
+
 function fazerLogout() {
-  currentUser = null;
-  document.getElementById('login-screen').classList.add('open');
+  if (!confirm('Deseja sair do sistema?')) return;
+  _usuarioLogado = null;
+  _empresaAtiva  = null;
+  currentUser    = null;
+  document.getElementById('header-empresa-nome').textContent = '';
+  document.getElementById('header-empresa-switcher').style.display = 'none';
   document.getElementById('login-user').value = '';
   document.getElementById('login-pass').value = '';
   document.getElementById('login-error').textContent = '';
-  setTimeout(() => document.getElementById('login-user').focus(), 100);
+  document.getElementById('login-empresa-row').style.display = 'none';
+  var btn = document.getElementById('login-btn');
+  btn.textContent = '🔑 Entrar';
+  btn.onclick = fazerLogin;
+  document.getElementById('login-screen').classList.add('open');
+  setTimeout(function() { document.getElementById('login-user').focus(); }, 100);
 }
 
 function buildNav() {
@@ -831,15 +1100,20 @@ function buildNav() {
   const items = [
     { id: 'dashboard',    label: '📊 Dashboard',    perm: 'ver_dashboard' },
     { id: 'funcionarios', label: '👥 Funcionários',  perm: 'ver_funcionarios' },
+    { id: 'setores',      label: '🏷️ Setores',       perm: 'ver_setores' },
     { id: 'campanhas',    label: '🎯 Campanhas',     perm: 'ver_campanhas' },
     { id: 'lancamentos',  label: '📝 Lançamentos',   perm: 'lancar_resultados' },
     { id: 'extrato',      label: '💰 Extrato',       perm: 'ver_extrato' },
     { id: 'relatorio',    label: '📈 Relatório',     perm: 'ver_relatorio' },
     { id: 'usuarios',     label: '👤 Usuários',      perm: 'gerenciar_usuarios' },
+    { id: 'empresas',     label: '🏢 Empresas',      perm: 'superadmin_only' },
   ];
-  nav.innerHTML = items.filter(i => hasPerm(i.perm)).map(i =>
-    `<button onclick="navigateTo('${i.id}')" id="nav-${i.id}">${i.label}</button>`
-  ).join('');
+  nav.innerHTML = items.filter(function(i) {
+    if (i.perm === 'superadmin_only') return _usuarioLogado && _usuarioLogado.perfil === 'superadmin';
+    return hasPerm(i.perm);
+  }).map(function(i) {
+    return '<button onclick="navigateTo(\'' + i.id + '\')" id="nav-' + i.id + '">' + i.label + '</button>';
+  }).join('');
 }
 
 function navigateTo(page) {
@@ -849,14 +1123,121 @@ function navigateTo(page) {
   if (pg) pg.classList.add('active');
   const nb = document.getElementById('nav-' + page);
   if (nb) nb.classList.add('active');
-  // render page
   if (page === 'dashboard')    rDashboard();
   if (page === 'funcionarios') rFuncionarios();
   if (page === 'campanhas')    rCampanhas();
   if (page === 'lancamentos')  rLancamentos();
   if (page === 'extrato')      rExtrato();
   if (page === 'relatorio')    rRelatorio();
-  if (page === 'usuarios')     rUsuarios();
+  if (page === 'usuarios')     { rUsuarios(); _buildEmpresaChecks(null); }
+  if (page === 'empresas')     rEmpresas();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  CRIPTOGRAFIA — AES-256-GCM (Web Crypto API nativa)
+//  Todos os dados PII dos funcionários são criptografados com AES-GCM
+//  antes de serem salvos em localStorage ou GitHub.
+// ══════════════════════════════════════════════════════════════════════
+const CryptoManager = {
+  _key: null,
+  // Material da chave (derivado via PBKDF2 — nunca usado diretamente)
+  _KM: 'BonusTrack#2024$AES!GCM@Secure_v2',
+  _SALT: new Uint8Array([0x42,0x54,0x32,0x30,0x32,0x34,0x53,0x41,0x4c,0x54,0x21,0x40,0x23,0x24,0x25,0x5e]),
+
+  async init() {
+    if (this._key) return;
+    const enc = new TextEncoder();
+    const keyMat = await crypto.subtle.importKey(
+      'raw', enc.encode(this._KM), 'PBKDF2', false, ['deriveKey']
+    );
+    this._key = await crypto.subtle.deriveKey(
+      { name:'PBKDF2', salt:this._SALT, iterations:120000, hash:'SHA-256' },
+      keyMat,
+      { name:'AES-GCM', length:256 },
+      false, ['encrypt','decrypt']
+    );
+  },
+
+  async encrypt(text) {
+    if (!text && text !== 0) return '';
+    await this.init();
+    const iv  = crypto.getRandomValues(new Uint8Array(12));
+    const enc = new TextEncoder();
+    const ct  = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, this._key, enc.encode(String(text)));
+    const ivB64 = btoa(String.fromCharCode(...iv));
+    const ctB64 = btoa(String.fromCharCode(...new Uint8Array(ct)));
+    return 'AES2:' + ivB64 + ':' + ctB64;
+  },
+
+  async decrypt(encText) {
+    if (!encText) return '';
+    // Suporte legado: XOR+Base64 antigo (campo cpf)
+    if (!encText.startsWith('AES2:')) return _legacyDecrypt(encText);
+    await this.init();
+    try {
+      const parts = encText.split(':');
+      if (parts.length !== 3) return '';
+      const iv = new Uint8Array(atob(parts[1]).split('').map(c => c.charCodeAt(0)));
+      const ct = new Uint8Array(atob(parts[2]).split('').map(c => c.charCodeAt(0)));
+      const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, this._key, ct);
+      return new TextDecoder().decode(plain);
+    } catch(e) { return ''; }
+  }
+};
+
+// Decodificador legado (XOR+Base64 — usado apenas para migração)
+function _legacyDecrypt(enc) {
+  if (!enc) return '';
+  const k = 'BT#2024$cpfKey!';
+  try {
+    let dec; try { dec = decodeURIComponent(escape(atob(enc))); } catch(e) { dec = atob(enc); }
+    let out = '';
+    for (let i = 0; i < dec.length; i++) out += String.fromCharCode(dec.charCodeAt(i) ^ k.charCodeAt(i % k.length));
+    return out;
+  } catch(e) { return ''; }
+}
+
+// Cache de funcionários descriptografados (acesso síncrono pós-init)
+var _decryptedFuncs = {};   // { empKey: [funcObj, ...] }
+
+// ── Descriptografa todos os funcionários do _cache ────────────────────
+async function _decryptAllFuncs() {
+  await CryptoManager.init();
+  const keys = Object.keys(_cache).filter(k => k.endsWith('_funcs'));
+  for (const key of keys) {
+    const arr = _cache[key];
+    if (!Array.isArray(arr)) continue;
+    _decryptedFuncs[key] = await Promise.all(arr.map(async f => ({
+      id:       f.id,
+      depto:    f.depto,
+      status:   f.status,
+      // Campos criptografados → descriptografados em memória
+      nome:     await CryptoManager.decrypt(f.enc_nome     || ''),
+      rg:       await CryptoManager.decrypt(f.enc_rg       || ''),
+      cpf:      await CryptoManager.decrypt(f.enc_cpf      || f.cpf || ''), // legado
+      nasc:     await CryptoManager.decrypt(f.enc_nasc     || f.nasc || ''), // legado
+      admissao: await CryptoManager.decrypt(f.enc_admissao || f.admissao || ''), // legado
+      demissao: await CryptoManager.decrypt(f.enc_demissao || ''),
+    })));
+  }
+}
+
+// ── Máscara CPF e RG ──────────────────────────────────────────────────
+function maskCPF(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 9)      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+  else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+  else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+  el.value = v;
+}
+function maskRG(el) {
+  let v = el.value.replace(/[^\dXx]/g, '');
+  if (v.length > 9) v = v.slice(0, 9);
+  if (v.length > 8)      v = v.replace(/(\d{2})(\d{3})(\d{3})([0-9Xx])/, '$1.$2.$3-$4');
+  else if (v.length > 5) v = v.replace(/(\d{2})(\d{3})(\d{1,3})/, '$1.$2.$3');
+  else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,3})/, '$1.$2');
+  el.value = v;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -870,30 +1251,37 @@ function openFuncModal(id) {
   if (id) {
     const f = gFuncs().find(x => x.id === id);
     if (!f) return;
-    document.getElementById('f-nome').value     = f.nome;
-    document.getElementById('f-cargo').value    = f.cargo || '';
-    document.getElementById('f-depto').value    = f.depto || '';
+    document.getElementById('f-nome').value     = f.nome     || '';
+    document.getElementById('f-depto').value    = f.depto    || '';
+    document.getElementById('f-status').value   = f.status   || 'ativo';
+    document.getElementById('f-cpf').value      = f.cpf      || '';
+    document.getElementById('f-rg').value       = f.rg       || '';
+    document.getElementById('f-nasc').value     = f.nasc     || '';
     document.getElementById('f-admissao').value = f.admissao || '';
-    document.getElementById('f-status').value   = f.status || 'ativo';
-    document.getElementById('f-obs').value      = f.obs || '';
+    document.getElementById('f-demissao').value = f.demissao || '';
   } else {
-    ['f-nome','f-cargo','f-depto','f-admissao','f-obs'].forEach(id => document.getElementById(id).value = '');
+    ['f-nome','f-cpf','f-rg','f-nasc','f-admissao','f-demissao'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('f-depto').value  = '';
     document.getElementById('f-status').value = 'ativo';
   }
   document.getElementById('modal-func').classList.add('open');
 }
 
-function saveFunc() {
-  const nome = document.getElementById('f-nome').value.trim();
-  if (!nome) { toast('Informe o nome do funcionário.','er'); return; }
+async function saveFunc() {
+  const nome  = document.getElementById('f-nome').value.trim();
+  const depto = document.getElementById('f-depto').value;
+  if (!nome)  { toast('Informe o nome do funcionário.','er'); return; }
+  if (!depto) { toast('Selecione o setor.','er'); return; }
   const funcs = gFuncs();
   const obj = {
     nome,
-    cargo:    document.getElementById('f-cargo').value.trim(),
-    depto:    document.getElementById('f-depto').value.trim(),
-    admissao: document.getElementById('f-admissao').value,
+    depto,
     status:   document.getElementById('f-status').value,
-    obs:      document.getElementById('f-obs').value.trim(),
+    cpf:      document.getElementById('f-cpf').value.trim(),
+    rg:       document.getElementById('f-rg').value.trim(),
+    nasc:     document.getElementById('f-nasc').value,
+    admissao: document.getElementById('f-admissao').value,
+    demissao: document.getElementById('f-demissao').value,
   };
   if (editFuncId) {
     const idx = funcs.findIndex(x => x.id === editFuncId);
@@ -901,10 +1289,10 @@ function saveFunc() {
   } else {
     funcs.push({ id: uid(), ...obj });
   }
-  sFuncs(funcs, () => {
+  await sFuncs(funcs, () => {
     closeMod('modal-func');
     rFuncionarios();
-    toast(editFuncId ? 'Funcionário atualizado!' : 'Funcionário cadastrado!','ok');
+    toast(editFuncId ? 'Funcionário atualizado! 🔒' : 'Funcionário cadastrado com dados criptografados! 🔒','ok');
   });
 }
 
@@ -918,23 +1306,42 @@ function delFunc(id) {
 function rFuncionarios() {
   const tbody = document.getElementById('func-tbody');
   if (!tbody) return;
-  const funcs = gFuncs();
-  if (!funcs.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="ico">👥</span>Nenhum funcionário cadastrado</td></tr>'; return; }
+  const search    = (document.getElementById('func-search')?.value || '').toLowerCase();
+  const filSetor  = document.getElementById('func-fil-setor')?.value  || '';
+  const filStatus = document.getElementById('func-fil-status')?.value || '';
+  let funcs = gFuncs().filter(f => {
+    const ms  = !search    || f.nome.toLowerCase().includes(search);
+    const ms2 = !filSetor  || f.depto === filSetor;
+    const ms3 = !filStatus || (f.status || 'ativo') === filStatus;
+    return ms && ms2 && ms3;
+  });
+  if (!funcs.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty"><span class="ico">👥</span>Nenhum funcionário encontrado</td></tr>';
+    return;
+  }
   const canEdit = hasPerm('editar_funcionarios');
-  tbody.innerHTML = funcs.map(f => `
-    <tr class="${f.status === 'inativo' ? 'inativo' : ''}">
+  tbody.innerHTML = funcs.map(f => {
+    const stBadge = f.status === 'ativo'
+      ? '<span class="badge b-green">✅ Ativo</span>'
+      : '<span class="badge b-red">⛔ Inativo</span>';
+    // Mascarar CPF parcialmente para exibição (mostra só os últimos 2 dígitos)
+    const cpfDisp = f.cpf ? f.cpf.replace(/^(\d{3}\.\d{3}\.\d{3}-)(\d{2})$/, '***.***.***-$2').replace(/^(.{3})(.+)(.{2})$/, (m,a,b,c) => a + b.replace(/[\dXx]/g,'*') + c) : '—';
+    const rgDisp  = f.rg  ? '••' + f.rg.slice(-3)  : '—';
+    return `<tr class="${f.status === 'inativo' ? 'inativo' : ''}">
       <td><strong>${f.nome}</strong></td>
-      <td>${f.cargo || '—'}</td>
-      <td>${f.depto || '—'}</td>
-      <td><span class="badge ${f.status === 'ativo' ? 'b-green' : 'b-gray'}">${f.status === 'ativo' ? 'Ativo' : 'Inativo'}</span></td>
+      <td><span class="badge b-blue">${f.depto || '—'}</span></td>
+      <td style="font-family:monospace;font-size:12px;" title="🔒 Dado criptografado — edite para ver completo">${cpfDisp}</td>
+      <td style="font-family:monospace;font-size:12px;" title="🔒 Dado criptografado">${rgDisp}</td>
+      <td>${f.nasc     ? fmtDate(f.nasc)     : '—'}</td>
       <td>${f.admissao ? fmtDate(f.admissao) : '—'}</td>
-      <td>
-        ${canEdit ? `<div class="act-row">
-          <button class="btn btn-ghost btn-sm" onclick="openFuncModal('${f.id}')">✏️ Editar</button>
-          <button class="btn btn-danger" onclick="delFunc('${f.id}')">🗑️</button>
-        </div>` : '—'}
-      </td>
-    </tr>`).join('');
+      <td>${f.demissao ? fmtDate(f.demissao) : '—'}</td>
+      <td>${stBadge}</td>
+      <td>${canEdit ? `<div class="act-row">
+        <button class="btn btn-ghost btn-sm" onclick="openFuncModal('${f.id}')">✏️ Editar</button>
+        <button class="btn btn-danger" onclick="delFunc('${f.id}')">🗑️</button>
+      </div>` : '—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -993,7 +1400,7 @@ function buildFuncCheckboxes() {
     <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px;">
       <input type="checkbox" id="cf-${f.id}" style="accent-color:var(--gold);width:15px;height:15px;">
       <span>${f.nome}</span>
-      ${f.cargo ? `<span style="font-size:11px;color:var(--text-dim);">(${f.cargo})</span>` : ''}
+      ${f.depto ? `<span style="font-size:11px;color:var(--text-dim);">(${f.depto})</span>` : ''}
     </label>`).join('');
 }
 
@@ -1373,7 +1780,7 @@ function rExtrato() {
     const camp = gCamps().find(c => c.id === l.campId);
     const meta = (camp?.metas||[]).find(m => m.id === l.metaId);
     return `<tr>
-      <td><strong>${func?.nome||'—'}</strong>${func?.cargo ? `<div style="font-size:11px;color:var(--text-dim);">${func.cargo}</div>`:''}
+      <td><strong>${func?.nome||'—'}</strong>${func?.depto ? `<div style="font-size:11px;color:var(--text-dim);">${func.depto}</div>`:''}
       </td>
       <td>${camp?.nome||'—'}</td>
       <td>${meta?.nome||'—'}</td>
@@ -1571,7 +1978,7 @@ function rDashboard() {
     tbody.innerHTML = rows.length ? rows.map(({f,fl,total,ating,campsF}) => `
       <tr>
         <td><strong>${f.nome}</strong></td>
-        <td>${f.cargo||'—'}</td>
+        <td>${f.depto||'—'}</td>
         <td>${campsF}</td>
         <td><span class="badge b-green">${ating}</span></td>
         <td><strong style="color:var(--green);">${fmtMoeda(total)}</strong></td>
@@ -1603,18 +2010,34 @@ function openUserModal(id) {
     document.getElementById('u-senha').value = '';
     document.getElementById('u-perfil').value = u.perfil || 'operador';
     PERMS.forEach(p => { const el = document.getElementById('perm-'+p.key); if(el) el.checked = (u.perms||[]).includes(p.key); });
+    _buildEmpresaChecks(u.empresas || []);
   } else {
     ['u-login','u-nome','u-senha'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('u-perfil').value = 'operador';
+    _buildEmpresaChecks(null);
     onPerfilChange();
   }
   document.getElementById('modal-usuario').classList.add('open');
+}
+
+function _buildEmpresaChecks(selectedIds) {
+  var empresas = _getEmpresas();
+  var el = document.getElementById('usr-empresa-grid');
+  if (!el) return;
+  if (!empresas.length) { el.innerHTML = '<span style="font-size:12px;color:var(--text-dim);">Nenhuma empresa cadastrada.</span>'; return; }
+  el.innerHTML = empresas.map(function(e) {
+    var chk = (selectedIds && selectedIds.indexOf(e.id) >= 0) ? 'checked' : '';
+    return '<label class="perm-item"><input type="checkbox" class="uemp-chk" value="' + e.id + '" ' + chk + '> ' + e.nome + '</label>';
+  }).join('');
 }
 
 function onPerfilChange() {
   const perfil = document.getElementById('u-perfil').value;
   const perms  = PERFIL_PERMS[perfil] || [];
   PERMS.forEach(p => { const el = document.getElementById('perm-'+p.key); if(el) el.checked = perms.includes(p.key); });
+  // Oculta seleção de empresa para superadmin
+  var empRow = document.getElementById('usr-empresa-row');
+  if (empRow) empRow.style.display = (perfil === 'superadmin') ? 'none' : '';
 }
 
 function saveUser() {
@@ -1627,18 +2050,30 @@ function saveUser() {
   const users = gUsers();
   if (!editUserId && users.find(u => u.login === login)) { toast('Login já existe.','er'); return; }
   const perms = PERMS.filter(p => document.getElementById('perm-'+p.key)?.checked).map(p => p.key);
+
+  // Empresas vinculadas
+  var empresasIds = [];
+  if (perfil !== 'superadmin') {
+    var empChks = document.querySelectorAll('.uemp-chk:checked');
+    for (var k = 0; k < empChks.length; k++) empresasIds.push(empChks[k].value);
+  }
+
+  // Hash da senha
+  var senhaHash = senha ? _hashSenha(senha) : null;
+
   if (editUserId) {
     const idx = users.findIndex(u => u.id === editUserId);
     if (idx >= 0) {
-      users[idx].login  = login;
-      users[idx].nome   = nome;
-      users[idx].perfil = perfil;
-      users[idx].perms  = perms;
-      if (senha) users[idx].senha = senha;
+      users[idx].login    = login;
+      users[idx].nome     = nome;
+      users[idx].perfil   = perfil;
+      users[idx].perms    = perms;
+      users[idx].empresas = empresasIds;
+      if (senha) { users[idx].senhaHash = senhaHash; users[idx].senha = senha; }
     }
   } else {
     if (!senha) { toast('Informe a senha.','er'); return; }
-    users.push({ id: uid(), login, nome, perfil, perms, senha });
+    users.push({ id: uid(), login, nome, perfil, perms, empresas: empresasIds, senha, senhaHash });
   }
   sUsers(users, () => { closeMod('modal-usuario'); rUsuarios(); toast(editUserId?'Usuário atualizado!':'Usuário criado!','ok'); });
 }
@@ -1652,18 +2087,97 @@ function rUsuarios() {
   const el = document.getElementById('user-list');
   if (!el) return;
   const users = gUsers();
+  const empresas = _getEmpresas();
   if (!users.length) { el.innerHTML = '<div class="empty"><span class="ico">👤</span>Nenhum usuário cadastrado</div>'; return; }
-  el.innerHTML = users.map(u => `
-    <div class="user-item">
-      <div>
-        <div class="uname">${u.nome} <code style="font-size:11px;color:var(--text-dim);">(${u.login})</code></div>
-        <div class="urole">${perfilLabel(u.perfil)}</div>
-      </div>
-      <div class="act-row">
-        <button class="btn btn-ghost btn-sm" onclick="openUserModal('${u.id}')">✏️ Editar</button>
-        ${gUsers().length > 1 ? `<button class="btn btn-danger" onclick="delUser('${u.id}')">🗑️</button>` : ''}
-      </div>
-    </div>`).join('');
+  el.innerHTML = users.map(function(u) {
+    var empNomes = '';
+    if (u.perfil === 'superadmin') {
+      empNomes = '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">🌐 Acesso total a todas as empresas</div>';
+    } else {
+      var empIds = u.empresas || [];
+      var nomes = empIds.map(function(eid) { var e = empresas.find(function(x){ return x.id===eid; }); return e ? e.nome : eid; });
+      empNomes = '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">🏢 ' + (nomes.length ? nomes.join(', ') : '— Sem empresa vinculada') + '</div>';
+    }
+    var isMe = _usuarioLogado && _usuarioLogado.login === u.login;
+    var actions = isMe
+      ? '<span style="font-size:12px;color:var(--text-dim);">—</span>'
+      : '<div class="act-row">'
+        + '<button class="btn btn-ghost btn-sm" onclick="openUserModal(\'' + u.id + '\')">✏️ Editar</button>'
+        + (users.length > 1 ? '<button class="btn btn-danger" onclick="delUser(\'' + u.id + '\')">🗑️</button>' : '')
+        + '</div>';
+    return '<div class="user-item">'
+      + '<div>'
+      + '<div class="uname">' + u.nome + ' <code style="font-size:11px;color:var(--text-dim);">(' + u.login + ')</code>'
+      + (isMe ? ' <span style="font-size:10px;color:var(--gold);">(você)</span>' : '')
+      + (u.perfil === 'superadmin' ? ' <span style="background:rgba(122,74,154,.12);color:#7a1a7a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;">SUPER</span>' : '')
+      + '</div>'
+      + '<div class="urole">' + perfilLabel(u.perfil) + '</div>'
+      + empNomes
+      + '</div>'
+      + actions
+      + '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  EMPRESAS (CRUD — apenas superadmin)
+// ══════════════════════════════════════════════════════════════════════
+function addEmpresa() {
+  var nome = document.getElementById('emp-nome').value.trim();
+  var end  = document.getElementById('emp-end').value.trim();
+  if (!nome) { toast('Informe o nome da empresa.','er'); return; }
+  var lista = _getEmpresas();
+  var novaId = Date.now().toString(36);
+  lista.push({ id: novaId, nome: nome, end: end });
+  document.getElementById('emp-nome').value = '';
+  document.getElementById('emp-end').value  = '';
+  _setEmpresas(lista, function() { toast('✅ Empresa adicionada!','ok'); });
+  renderEmpresas();
+  _popularSuperSel();
+  _buildEmpresaChecks(null);
+}
+
+function delEmpresa(id) {
+  var lista = _getEmpresas();
+  var emp = lista.find(function(e) { return e.id === id; });
+  if (!emp) return;
+  if (!confirm('Remover "' + emp.nome + '"? Os dados da empresa serão mantidos, mas ela não será mais acessível por novos usuários.')) return;
+  lista = lista.filter(function(e) { return e.id !== id; });
+  // Remove empresa dos usuários
+  var usuarios = gUsers();
+  usuarios = usuarios.map(function(u) {
+    u.empresas = (u.empresas || []).filter(function(eid) { return eid !== id; });
+    return u;
+  });
+  _cache['bt_users'] = usuarios;
+  _setEmpresas(lista, function() { toast('Empresa removida.','in'); });
+  renderEmpresas();
+  _popularSuperSel();
+  _buildEmpresaChecks(null);
+}
+
+function renderEmpresas() {
+  var lista = _getEmpresas();
+  var usuarios = gUsers();
+  var el = document.getElementById('lista-empresas');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = '<div class="empty"><span class="ico">🏢</span>Nenhuma empresa</div>'; return; }
+  var h = '';
+  for (var i = 0; i < lista.length; i++) {
+    var e = lista[i];
+    var numU = usuarios.filter(function(u) { return (u.empresas || []).indexOf(e.id) >= 0; }).length;
+    h += '<div class="user-item">'
+      + '<div style="flex:1;min-width:0">'
+      + '<div class="uname">🏢 ' + e.nome + '</div>'
+      + '<div class="urole">' + numU + ' usuário(s) vinculado(s)' + (e.end ? ' · 📍 ' + e.end : '') + '</div></div>'
+      + '<div><button class="btn btn-danger" onclick="delEmpresa(\'' + e.id + '\')">✕ Remover</button></div>'
+      + '</div>';
+  }
+  el.innerHTML = h;
+}
+
+function rEmpresas() {
+  renderEmpresas();
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1693,6 +2207,10 @@ function rAll() {
   rRelatorio();
   rUsuarios();
   rDashboard();
+  // Atualiza seletor de empresas do superadmin
+  if (_usuarioLogado && _usuarioLogado.perfil === 'superadmin') _popularSuperSel();
+  // Reconfigura seletor de empresas no modal de usuário
+  _buildEmpresaChecks(null);
 }
 
 function fmtMoeda(v) {
@@ -1796,18 +2314,44 @@ function toast(msg, type='in') {
 // ══════════════════════════════════════════════════════════════════════
 //  SEED — dados iniciais de demonstração
 // ══════════════════════════════════════════════════════════════════════
-function seed() {
-  if (gUsers().length) return;
-  // Usuário admin padrão
-  sUsers([{ id: uid(), login:'admin', nome:'Administrador', perfil:'superadmin', perms: PERMS.map(p=>p.key), senha:'admin123' }]);
+async function seed() {
+  // Garantia do superadmin sempre roda antes
+  _garantirSuperAdmin();
+
+  // Só faz seed de dados de demo se não há empresas ainda
+  if (_getEmpresas().length) return;
+
+  // Cria empresas demo se não existem
+  if (!_getEmpresas().length) {
+    var emp1Id = 'emp_' + Date.now().toString(36) + '1';
+    var emp2Id = 'emp_' + Date.now().toString(36) + '2';
+    _setEmpresas([
+      { id: emp1Id, nome: 'Restaurante Central', end: 'Av. Paulista, 100 — SP' },
+      { id: emp2Id, nome: 'Lanchonete Express',  end: 'Rua Augusta, 200 — SP' }
+    ], null);
+
+    // Cria admin demo vinculado à primeira empresa
+    var admins = Array.isArray(_cache['bt_users']) ? _cache['bt_users'] : [];
+    // Verifica se admin já existe
+    if (!admins.find(function(u) { return u.login === 'admin'; })) {
+      admins.push({ id: uid(), login:'admin', nome:'Administrador', perfil:'admin', perms: PERMS.map(function(p){ return p.key; }), empresas:[emp1Id], senhaHash: _hashSenha('admin123'), senha:'admin123' });
+    }
+    _cache['bt_users'] = admins;
+    _persistir();
+
+    // Define empresa ativa para seed de dados
+    _empresaAtiva = { id: emp1Id, nome: 'Restaurante Central' };
+  }
+
+  // Admin padrão já criado acima via seed de empresas
   // Funcionários demo
   const fids = [uid(), uid(), uid(), uid(), uid()];
-  sFuncs([
-    { id:fids[0], nome:'Ana Silva',       cargo:'Atendente',     depto:'Atendimento', admissao:'2023-01-10', status:'ativo', obs:'' },
-    { id:fids[1], nome:'Bruno Costa',     cargo:'Vendedor',      depto:'Vendas',      admissao:'2022-06-15', status:'ativo', obs:'' },
-    { id:fids[2], nome:'Carla Souza',     cargo:'Vendedora',     depto:'Vendas',      admissao:'2023-03-20', status:'ativo', obs:'' },
-    { id:fids[3], nome:'Diego Ferreira',  cargo:'Atendente',     depto:'Atendimento', admissao:'2021-11-01', status:'ativo', obs:'' },
-    { id:fids[4], nome:'Eliana Martins',  cargo:'Supervisora',   depto:'Geral',       admissao:'2020-05-12', status:'ativo', obs:'' },
+  await sFuncs([
+    { id:fids[0], nome:'Ana Silva',       depto:'Atendimento', nasc:'1995-03-14', admissao:'2023-01-10', demissao:'', status:'ativo', cpf:'111.444.777-35', rg:'12.345.678-9' },
+    { id:fids[1], nome:'Bruno Costa',     depto:'Atendimento', nasc:'1990-07-22', admissao:'2022-06-15', demissao:'', status:'ativo', cpf:'222.555.888-46', rg:'23.456.789-0' },
+    { id:fids[2], nome:'Carla Souza',     depto:'Cozinha',     nasc:'1993-11-05', admissao:'2023-03-20', demissao:'', status:'ativo', cpf:'333.666.999-57', rg:'34.567.890-1' },
+    { id:fids[3], nome:'Diego Ferreira',  depto:'Cozinha',     nasc:'1988-09-30', admissao:'2021-11-01', demissao:'', status:'ativo', cpf:'444.777.111-68', rg:'45.678.901-2' },
+    { id:fids[4], nome:'Eliana Martins',  depto:'Gestão',      nasc:'1985-01-18', admissao:'2020-05-12', demissao:'', status:'ativo', cpf:'555.888.222-79', rg:'56.789.012-3' },
   ]);
   // Campanhas demo
   const mid1 = uid(), mid2 = uid(), mid3 = uid();
@@ -1833,6 +2377,9 @@ function seed() {
       ]
     },
   ]);
+  // Reset empresa ativa (será definida no login)
+  _empresaAtiva = null;
+
   // Lançamentos demo
   sLancs([
     { id:uid(), campId:cid1, funcId:fids[0], metaId:mid1, valor:7,  bonus:105.00, pago:true,  dataPagamento:'2025-02-05' },
@@ -1852,19 +2399,34 @@ function seed() {
 //  INIT
 // ══════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async function() {
+  // 1. Inicializa engine AES-256-GCM (deriva chave via PBKDF2)
+  await CryptoManager.init();
+  // 2. Carrega dados do localStorage
   _carregarLS();
-  seed();
+  // Garante arrays globais
+  if (!Array.isArray(_cache['bt_users'])) _cache['bt_users'] = [];
+  if (!Array.isArray(_cache['bt_empresas'])) _cache['bt_empresas'] = [];
+  _garantirSuperAdmin();
+  // 3. Descriptografa funcionários do localStorage
+  await _decryptAllFuncs();
+  // 4. Seed de dados demo (se necessário)
+  await seed();
+  // 5. GitHub
   updateLoginGHStatus();
   if (GH.isConfigured()) {
     setStatus('Carregando dados...','var(--text-dim)');
     const result = await DB.loadGH();
     setStatus(result.ok ? 'GitHub conectado' : 'GitHub com erro', result.ok ? 'var(--green)' : 'var(--red)');
     if (!result.ok) console.warn('GitHub:', result.msg);
+    // Descriptografa funcionários carregados do GitHub
+    await _decryptAllFuncs();
+    // Garante superadmin após carregar dados do GitHub
+    _garantirSuperAdmin();
   } else {
-    setStatus('GitHub nao configurado','var(--text-dim)');
+    setStatus('GitHub não configurado','var(--text-dim)');
   }
   document.getElementById('login-screen').classList.add('open');
-  setTimeout(() => document.getElementById('login-user').focus(), 200);
+  setTimeout(function() { document.getElementById('login-user').focus(); }, 200);
 });
 </script>
 </body>
