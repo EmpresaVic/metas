@@ -18,6 +18,28 @@
         "gerenciar_usuarios"
       ],
       "senha": "admin123"
+    },
+    {
+      "id": "super",
+      "login": "super",
+      "nome": "Super Admin",
+      "senhaHash": "-63bd2729",
+      "perfil": "superadmin",
+      "empresas": [],
+      "perms": [
+        "ver_dashboard",
+        "ver_funcionarios",
+        "editar_funcionarios",
+        "ver_setores",
+        "ver_campanhas",
+        "editar_campanhas",
+        "lancar_resultados",
+        "ver_extrato",
+        "marcar_pago",
+        "ver_relatorio",
+        "gerenciar_usuarios"
+      ],
+      "senha": null
     }
   ],
   "bt_funcs": [
